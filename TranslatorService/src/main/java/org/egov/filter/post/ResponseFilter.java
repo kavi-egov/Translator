@@ -4,7 +4,7 @@ import java.io.InputStreamReader;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.egov.filter.utils.FilterConstant;
+import org.egov.filter.util.FilterConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,32 +25,25 @@ public class ResponseFilter extends ZuulFilter {
 
 	@Override
 	public Object run() {
-		
+
 		String s = null;
 		RequestContext reqCtx = RequestContext.getCurrentContext();
 		reqCtx.setResponseStatusCode(HttpServletResponse.SC_OK);
 		reqCtx.getResponse().setHeader(org.apache.http.HttpHeaders.CONTENT_TYPE, "application/json");
-		
-		if(reqCtx.get(FilterConstant.ERROR_RESPONSE)!=null) {
+
+		if (reqCtx.get(FilterConstant.ERROR_RESPONSE) != null) {
 			try {
+				reqCtx.setResponseStatusCode(400);
 				s = mapper.writeValueAsString(reqCtx.get(FilterConstant.ERROR_RESPONSE));
 			} catch (JsonProcessingException e) {
-				e.printStackTrace();
+				log.error(" exception occured while parsing ERROR_RESPONSE : {}", e);
 			}
+		} else if (reqCtx.get(FilterConstant.RESPONSE_BODY) != null) {
+			s = (String) reqCtx.get(FilterConstant.RESPONSE_BODY);
 		}
-		/*System.err.println( " the throwable in ctc : "+reqCtx.getThrowable().getCause());*/
-			
-			/*try {
-				s =  CharStreams.toString(new InputStreamReader(reqCtx.getResponseDataStream(), "UTF-8"));
-				System.err.println("The s value : "+s);
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.err.println(" catch block : ");
-			}*/
-			
-		RequestContext.getCurrentContext().setResponseBody(s);
-		log.info(" the ctx.get(\"responseBody\") :  {}" , RequestContext.getCurrentContext().get("responseBody"));
-		log.info(" the ctx.get(\"errorResponse\") :  {}" , RequestContext.getCurrentContext().get("errorResponse"));
+		reqCtx.setResponseBody(s);
+		log.debug(" the ctx.get(\"responseBody\") :  {}", RequestContext.getCurrentContext().get("responseBody"));
+		log.debug(" the ctx.get(\"errorResponse\") :  {}", RequestContext.getCurrentContext().get("errorResponse"));
 		return null;
 
 	}

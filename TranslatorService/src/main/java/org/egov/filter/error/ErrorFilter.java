@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.egov.filter.utils.FilterConstant;
+import org.egov.filter.util.FilterConstant;
 import org.egov.tracer.model.CustomException;
 import org.egov.tracer.model.Error;
 import org.egov.tracer.model.ErrorRes;
@@ -65,6 +65,7 @@ public class ErrorFilter extends ZuulFilter {
 			error.setCode("500");
 			error.setMessage(throwable.getCause().getMessage());
 			errors.add(error);
+			throwable.getCause().printStackTrace();
 		}
 
 		errorResponse.setErrors(errors);
